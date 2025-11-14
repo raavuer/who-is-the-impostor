@@ -1,0 +1,10 @@
+{
+  "name": "who-is-the-impostor",
+  "version": "0.0.1",
+  "description": "A basic web app to play the hit game 'Who is the Impostor?' online.",
+  "type": "module",
+  "dependencies": {
+    "express": "^5.1.0",
+    "socket.io": "^4.8.1"
+  }
+}
