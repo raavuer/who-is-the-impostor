@@ -15,19 +15,12 @@ const settings = {
   numberOfImpostors: 1,
 };
 const players = {};
-function Player(id) {
-  this.id = id;
+function Player(name) {
+  this.name = name;
   this.role = "Unassigned";
 }
 
-io.on("connection", (socket) => {
-  players[socket.id] = new Player(socket.id);
-  socket.on("disconnect", () => {
-    delete players[socket.id];
-  });
-  if (Object.keys(players).length < settings.numberOfPlayers) {
-    return;
-  }
+function startGame() {
   for (let i = 0; i < settings.numberOfPlayers; i++) {
     players[Object.keys(players)[i]].role = "Bystander";
   }
@@ -35,7 +28,22 @@ io.on("connection", (socket) => {
     // FIX - Allows one person to be impostor multiple times
     players[Object.keys(players)[Math.floor(Math.random() * settings.numberOfPlayers)]].role = "Impostor";
   }
-  io.emit("getRoles", players);
+  for (const [player, data] of Object.entries(players)) {
+    io.to(player).emit("getRoles", data);
+  }
+}
+
+io.on("connection", (socket) => {
+  players[socket.id] = new Player(socket.id);
+  socket.on("disconnect", () => {
+    delete players[socket.id];
+  });
+  socket.on("changeName", (name) => {
+    players[socket.id].name = name;
+  });
+  if (Object.keys(players).length >= settings.numberOfPlayers) {
+    startGame();
+  }
 });
 
 server.listen(8080, () => {console.log('App started.');});

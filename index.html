@@ -1,18 +1,28 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title>Who is the Impostor?</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <style>
+      body {
+        text-align: center;
+      }
+    </style>
   </head>
   <body>
-    <h1 id="role"></h1>
+    <input type="text" id="playerName" value="">
+    <h2 id="playeRole"></h2>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
       const socket = io();
 
-      socket.on("getRoles", (players) => {
-        role.innerText = players[socket.id].role;
+      $(playerName).change(() => {
+        socket.emit("changeName", $(playerName).val());
+      }).change();
+      socket.on("getRoles", (player) => {
+        playerRole.innerText = player.role;
       });
     </script>
   </body>
