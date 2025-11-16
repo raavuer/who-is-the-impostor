@@ -11,17 +11,29 @@
     </style>
   </head>
   <body>
-    <input type="text" id="playerName" value="">
-    <h2 id="playeRole"></h2>
+    <form>
+      <input type="text" id="playerName" value="username" pattern="[\w]{3,10}" title="3-10 characters of A-z, 0-9, or _"/>
+    </form>
+    <h2 id="playerRole"></h2>
+    <ul id="votePlayers"></ul>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
       const socket = io();
-
+      
+      $(playerName).parent().submit((event) => {
+        event.preventDefault();
+      });
       $(playerName).change(() => {
         socket.emit("changeName", $(playerName).val());
       }).change();
-      socket.on("getRoles", (player) => {
+      socket.on("getPlayersNames", (players) => {
+        $(votePlayers).empty();
+        for (const player of Object.keys(players)) {
+          $(votePlayers).append(`<li>${players[player].name}</li>`);
+        }
+      });
+      socket.on("getRole", (player) => {
         playerRole.innerText = player.role;
       });
     </script>

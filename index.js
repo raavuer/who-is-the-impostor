@@ -28,8 +28,8 @@ function startGame() {
     // FIX - Allows one person to be impostor multiple times
     players[Object.keys(players)[Math.floor(Math.random() * settings.numberOfPlayers)]].role = "Impostor";
   }
-  for (const [player, data] of Object.entries(players)) {
-    io.to(player).emit("getRoles", data);
+  for (const player of Object.keys(players)) {
+    io.to(player).emit("getRole", players[player]);
   }
 }
 
@@ -39,7 +39,8 @@ io.on("connection", (socket) => {
     delete players[socket.id];
   });
   socket.on("changeName", (name) => {
-    players[socket.id].name = name;
+    players[socket.id].name = name.match(/\w{3,10}/);
+    io.emit("getPlayersNames", players); // Probably gives client too much trust (can see roles possibly)
   });
   if (Object.keys(players).length >= settings.numberOfPlayers) {
     startGame();
