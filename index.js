@@ -18,6 +18,7 @@ const players = {};
 function Player(name) {
   this.name = name;
   this.role = "Unassigned";
+  this.vote = "No one";
 }
 
 function startGame() {
@@ -37,14 +38,20 @@ io.on("connection", (socket) => {
   players[socket.id] = new Player(socket.id);
   socket.on("disconnect", () => {
     delete players[socket.id];
+    io.emit("getPlayersNames", players); // Probably gives client too much trust (can see roles possibly)
   });
   socket.on("changeName", (name) => {
     players[socket.id].name = name.match(/\w{3,10}/);
     io.emit("getPlayersNames", players); // Probably gives client too much trust (can see roles possibly)
   });
-  if (Object.keys(players).length >= settings.numberOfPlayers) {
-    startGame();
+  if (Object.keys(players).length < settings.numberOfPlayers) {
+    return;
   }
+  startGame();
+  socket.once("voteFor", (votedFor) => {
+    players[socket.id].vote = votedFor;
+    console.log(`${players[socket.id].name} voted for ${players[socket.id].vote}`);
+  });
 });
 
 server.listen(8080, () => {console.log('App started.');});
