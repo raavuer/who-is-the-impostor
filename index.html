@@ -3,16 +3,10 @@
   <head>
     <title>Who is the Impostor?</title>
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <style>
-      body {
-        text-align: center;
-      }
-    </style>
   </head>
   <body>
-    <form>
-      <input type="text" id="playerName" value="username" pattern="[\w]{3,10}" title="3-10 characters of A-z, 0-9, or _"/>
+    <form onsubmit="event.preventDefault()">
+      <input type="text" id="playerName" value="username" pattern="[\w]{3,10}" title="3-10 characters of A-z, 0-9, or _" onchange="changeName(this)"/>
     </form>
     <h2 id="playerRole"></h2>
     <ul id="votePlayers"></ul>
@@ -21,16 +15,19 @@
     <script>
       const socket = io();
       
-      $(playerName).parent().submit((event) => {
-        event.preventDefault();
-      });
-      $(playerName).change(() => {
-        socket.emit("changeName", $(playerName).val());
-      }).change();
+      function changeName(input) {
+        socket.emit("changeName", input.value);
+      }; changeName(playerName);
+      function vote(player) {
+        socket.emit("voteFor", player.innerText);
+      };
       socket.on("getPlayersNames", (players) => {
-        $(votePlayers).empty();
+        votePlayers.replaceChildren();
         for (const player of Object.keys(players)) {
-          $(votePlayers).append(`<li>${players[player].name}</li>`);
+          const playerElement = document.createElement("li");
+          playerElement.innerText = players[player].name;
+          playerElement.setAttribute("onclick", "vote(this)");
+          votePlayers.appendChild(playerElement);
         }
       });
       socket.on("getRole", (player) => {
