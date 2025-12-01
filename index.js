@@ -55,3 +55,9 @@ io.on("connection", (socket) => {
 });
 
 server.listen(8080, () => {console.log('App started.');});
+
+/* TODO
+ * Remove cheating through getPlayersNames and browser network
+ * Add voting confirmation for client
+ *
+*/
