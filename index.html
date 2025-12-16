@@ -22,14 +22,20 @@
         socket.emit("changeName", input.value);
       }; changeName(playerName);
       function vote(player) {
-        socket.emit("voteFor", player.innerText);
+        console.log(player);
+        socket.emit("voteFor", player.parentElement.innerText);
       };
       socket.on("getPlayersNames", (players) => {
         votePlayers.replaceChildren();
         for (const player of Object.keys(players)) {
           const playerElement = document.createElement("li");
-          playerElement.innerText = players[player].name;
-          playerElement.setAttribute("onclick", "vote(this)");
+          const playerName = document.createTextNode(players[player].name);
+          const votePlayer = document.createElement("button");
+          votePlayer.innerText = "Vote";
+          votePlayer.setAttribute("type", "button");
+          votePlayer.setAttribute("onclick", "vote(this)");
+          playerElement.appendChild(playerName);
+          playerElement.appendChild(votePlayer);
           votePlayers.appendChild(playerElement);
         }
       });
