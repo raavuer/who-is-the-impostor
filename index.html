@@ -3,45 +3,60 @@
   <head>
     <title>Who is the Impostor?</title>
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <style>
+      html {
+        font-family: monospace;
+        text-align: center;
+      }
+      form,input,button {
+        padding: 4px;
+        margin: 4px;
+      }
+      ul {
+        display: inline-block;
+      }
+    </style>
   </head>
   <body>
-    <form onsubmit="event.preventDefault()">
-      <input type="text" id="playerName" value="username" pattern="[\w]{3,10}" title="3-10 characters of A-z, 0-9, or _" onchange="changeName(this)"/>
-    </form>
-    <h2 id="playerRole"></h2>
-
-    <hr>
-    <h3>Players</h3>
-    <ul id="votePlayers"></ul>
-
+    <header>
+      <h1 id="playerName"></h1>
+      <form id="playerNameInput">
+        <input type="text" placeholder="username" pattern="[\w]{3,10}" title="3-10 characters of A-z, 0-9, or _"/>
+        <button type="submit">Join</button>
+      </form>
+      <hr>
+    </header>
+    <main id="game" style="display:none">
+      <h2 id="playerRole"></h2>
+      <div>
+        <h3>Players</h3>
+        <ul id="votePlayers"</ul>
+      </div>
+    </main>
+    
     <script src="/socket.io/socket.io.js"></script>
     <script>
-      const socket = io();
-      
-      function changeName(input) {
-        socket.emit("changeName", input.value);
-      }; changeName(playerName);
-      function vote(player) {
-        console.log(player);
-        socket.emit("voteFor", player.parentElement.innerText);
-      };
-      socket.on("getPlayersNames", (players) => {
+      const socket = io({autoConnect: false});
+      socket.on("getPlayerName", (callback) => {
+        callback(playerName.textContent);
+      });
+      socket.on("changePlayers", (players) => {
         votePlayers.replaceChildren();
-        for (const player of Object.keys(players)) {
+        players.forEach((player) => {
           const playerElement = document.createElement("li");
-          const playerName = document.createTextNode(players[player].name);
-          const votePlayer = document.createElement("button");
-          votePlayer.innerText = "Vote";
-          votePlayer.setAttribute("type", "button");
-          votePlayer.setAttribute("onclick", "vote(this)");
-          playerElement.appendChild(playerName);
-          playerElement.appendChild(votePlayer);
+          const playerName = document.createTextNode(player.name);
+          playerElement.appendChild(document.createTextNode(player.name));
           votePlayers.appendChild(playerElement);
-        }
+        });
       });
-      socket.on("getRole", (player) => {
-        playerRole.innerText = player.role;
-      });
+
+      playerNameInput.addEventListener("submit", function (event) {
+        event.preventDefault();
+        this.style.display = "none";
+        playerName.textContent = this.firstElementChild.value;
+        game.style.display = "block";
+        socket.connect()
+      }, once=true);
     </script>
   </body>
 </html>
